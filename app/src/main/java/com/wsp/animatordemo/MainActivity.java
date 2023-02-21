@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.live1.setOnClickListener(v -> {startActivity(new Intent(MainActivity.this,GameDetailActivity.class));});
         binding.live2.setOnClickListener(v -> {startActivity(new Intent(MainActivity.this,GameDetailActivity2.class));});
+        binding.purchase1.setOnClickListener(v -> {startActivity(new Intent(MainActivity.this,PurchaseActivity.class));});
 
         /*NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();

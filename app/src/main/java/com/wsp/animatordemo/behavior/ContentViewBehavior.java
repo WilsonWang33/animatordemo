@@ -75,7 +75,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     @Override
     public void onNestedPreScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int dx, int dy, @NonNull int[] consumed, int type) {
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
-        //处理向上滑动
+        //手指向下滑
         float newTransY = child.getTranslationY()-dy;
         Log.i("Content-","onNestedPreScroll:"+newTransY+"  dy:"+dy);
         if(dy>0){
@@ -97,7 +97,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     @Override
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type, @NonNull int[] consumed) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type, consumed);
-        if (dyUnconsumed < 0) { // 只处理手指向下滑动的情况
+        if (dyUnconsumed < 0) { // 只处理手指向上滑动的情况
             float newTransY = child.getTranslationY() - dyUnconsumed;
             if (newTransY<=titleHeight) {
 //                child.setScaleY(newTransY);

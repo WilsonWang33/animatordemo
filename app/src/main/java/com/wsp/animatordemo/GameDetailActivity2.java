@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.wsp.animatordemo.databinding.ActivityGameDetail2Binding;
 import com.wsp.animatordemo.databinding.ActivityGameDetailBinding;
 import com.wsp.animatordemo.utils.DensityUtil;
@@ -45,13 +46,17 @@ public class GameDetailActivity2 extends AppCompatActivity {
     }
 
     private void initAnimator() {
-        /*layout.nested.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+        layout.appbar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                Log.i("nestedScroll"," : "+scrollY);
-                GameDetailActivity.this.scrollY = scrollY;
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                View v = appBarLayout.getChildAt(0);
+                ViewGroup.LayoutParams layoutParams = v.getLayoutParams();
+                layoutParams.height += verticalOffset;
+                v.setLayoutParams(layoutParams);
+
             }
-        });*/
+        });
+
     }
 
     private void initRecycler() {

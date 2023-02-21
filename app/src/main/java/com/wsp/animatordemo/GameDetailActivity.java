@@ -79,7 +79,7 @@ public class GameDetailActivity extends AppCompatActivity {
         });
     }
 
-    class SampleTVHolder extends RecyclerView.ViewHolder{
+    public static class SampleTVHolder extends RecyclerView.ViewHolder{
         TextView tv;
 
         public SampleTVHolder(@NonNull View itemView) {
@@ -92,6 +92,8 @@ public class GameDetailActivity extends AppCompatActivity {
         imgDatas.add(R.mipmap.living);
         imgDatas.add(R.mipmap.living);
         layout.banner.setAdapter(new NewBannerAdapter(imgDatas));
+//        View v = getLayoutInflater().inflate(R.layout.item_banner,null,false);
+//        layout.banner.addView(v);
     }
 
     class NewBannerAdapter<String> extends BannerAdapter<String,NewBannerHolder>{
