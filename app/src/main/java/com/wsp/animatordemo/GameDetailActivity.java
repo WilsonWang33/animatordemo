@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.wsp.animatordemo.databinding.ActivityGameDetail3Binding;
 import com.wsp.animatordemo.databinding.ActivityGameDetailBinding;
 import com.wsp.animatordemo.utils.DensityUtil;
 import com.wsp.animatordemo.utils.StatusBarUtil;
@@ -26,17 +29,16 @@ import java.util.List;
  * created by wyp at 2023/02/17
  */
 public class GameDetailActivity extends AppCompatActivity {
-    ActivityGameDetailBinding layout;
+    ActivityGameDetail3Binding layout;
     List<Integer> imgDatas = new ArrayList<>();
     List<String> strings = new ArrayList<>();
-
-    int scrollY;
+    int screenWidth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         StatusBarUtil.setStatusBarLightMode(this);
-        layout = ActivityGameDetailBinding.inflate(getLayoutInflater());
+        layout = ActivityGameDetail3Binding.inflate(getLayoutInflater());
         setContentView(layout.getRoot());
         initBanner();
         initRecycler();
@@ -94,6 +96,25 @@ public class GameDetailActivity extends AppCompatActivity {
 //        layout.banner.setAdapter(new NewBannerAdapter(imgDatas));
 //        View v = getLayoutInflater().inflate(R.layout.item_banner,null,false);
 //        layout.banner.addView(v);
+        screenWidth = DensityUtil.getScreenWidth(this);
+        RelativeLayout relativeLayout = new RelativeLayout(this);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams((screenWidth - DensityUtil.dip2px(this, 60)), ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.rightMargin = DensityUtil.dip2px(this,15);
+        relativeLayout.setLayoutParams(layoutParams);
+        relativeLayout.setBackgroundResource(R.drawable.conner_9_bg_999999);
+        relativeLayout.addView(createImageView());
+        layout.llHeader.addView(relativeLayout);
+        layout.llHeader.addView(createImageView());
+    }
+
+    private ImageView createImageView() {
+        ImageView imageView = new ImageView(GameDetailActivity.this);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        imageView.setLayoutParams(layoutParams);
+        imageView.setImageResource(R.mipmap.living);
+        return imageView;
     }
 
     class NewBannerAdapter<String> extends BannerAdapter<String,NewBannerHolder>{
