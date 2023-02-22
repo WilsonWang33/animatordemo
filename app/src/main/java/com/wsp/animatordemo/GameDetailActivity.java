@@ -35,7 +35,7 @@ public class GameDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        StatusBarUtil.transparencyBar(this);
+        StatusBarUtil.setStatusBarLightMode(this);
         layout = ActivityGameDetailBinding.inflate(getLayoutInflater());
         setContentView(layout.getRoot());
         initBanner();

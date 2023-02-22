@@ -17,6 +17,8 @@ import java.lang.reflect.Method;
 
 public class StatusBarUtil {
 
+   public static int statusBarStatus = 1; //1 drak, 2tran
+
   /**
    * 修改状态栏为全透明
    */
@@ -34,6 +36,7 @@ public class StatusBarUtil {
       window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
           WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }
+    statusBarStatus = 2;
   }
 
   
@@ -45,6 +48,7 @@ public class StatusBarUtil {
    */
   private static int StatusBarLightMode(Activity activity) {
     int result = 0;
+    activity.getWindow().setStatusBarColor(Color.TRANSPARENT);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       if (MIUISetStatusBarLightMode(activity.getWindow(), true)) {
         result = 1;
@@ -56,6 +60,7 @@ public class StatusBarUtil {
         transparencyBar(activity);
       }
     }
+    statusBarStatus = 1;
     return result;
   }
 

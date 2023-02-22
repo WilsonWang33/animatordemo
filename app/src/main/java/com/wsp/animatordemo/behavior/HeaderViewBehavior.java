@@ -1,16 +1,13 @@
 package com.wsp.animatordemo.behavior;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
@@ -20,7 +17,7 @@ import androidx.core.view.ViewCompat;
 
 import com.wsp.animatordemo.utils.DensityUtil;
 import com.wsp.animatordemo.R;
-import com.youth.banner.Banner;
+import com.wsp.animatordemo.utils.StatusBarUtil;
 
 public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
 
@@ -29,12 +26,10 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
     private int headerViewScaleHeight;
     private int headerViewWidth;
     private int titleHeight;
-
     private float oldTranslationY;
-
     private View scrollView;
-
-    private int mTouchSlop;
+    private int screenW;
+    private float changeRate = 0;
 
     public HeaderViewBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -44,17 +39,16 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
     public boolean onLayoutChild(@NonNull CoordinatorLayout parent, @NonNull View child, int layoutDirection) {
         parent.onLayoutChild(child,layoutDirection);
         scrollView = parent.findViewById(R.id.recycler);
-        mTouchSlop = ViewConfiguration.get(child.getContext()).getScaledTouchSlop() / 2;
         titleHeight = parent.findViewById(R.id.title).getMeasuredHeight();
         headerViewHeight = child.getMeasuredHeight();
         oldH = headerViewHeight;
         headerViewWidth = child.getMeasuredWidth();
         headerViewScaleHeight = headerViewHeight + 2*titleHeight;
+        screenW = DensityUtil.getScreenWidth(child.getContext());
         Log.i("headerView-","onLayoutChild" + "headerViewHeight:"+headerViewHeight);
         // 设置 top 从而排在 HeaderView的下面
         ViewCompat.offsetTopAndBottom(child, titleHeight);
         return true;
-
     }
 
     @Override
@@ -79,25 +73,29 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
         float translationY = dependency.getTranslationY();
         int top = dependency.getTop();
         int measuredHeight = child.getMeasuredHeight();
-//        Log.i("headerView-","onDependentViewChanged" + " translationY:"+translationY);
-//        Log.i("headerView-","onDependentViewChanged" + " title:"+titleHeight);
-        RelativeLayout relativeLayout = (RelativeLayout) child;
+        Log.i("headerView-","onDependentViewChanged" + " translationY:"+translationY);
+        ViewGroup relativeLayout = (RelativeLayout) child;
+        setStatusBarAndTitleBar(parent,relativeLayout,translationY);
         if(translationY<0&&measuredHeight<=headerViewHeight){
             child.setTranslationY(translationY);
         }else if(translationY<=titleHeight){
+            child.setTranslationY(0);
             //scale方式，图片变形
-            float newH = headerViewHeight+translationY*2;
-            float scaleY = newH/headerViewHeight;
+            float newH = (float) headerViewHeight+(float) translationY*2;
+            float scaleY = (float) newH/(float) headerViewHeight;
             //换算x方向放大倍数
             float maxScaleY = (float) headerViewScaleHeight/(float) headerViewHeight;
-            float widthMargin = DensityUtil.getScreenWidth(child.getContext())-headerViewWidth;
-            float dx = widthMargin*(scaleY-(maxScaleY-1));
+            float widthMargin = screenW-headerViewWidth;
+            changeRate = scaleY-(maxScaleY-1);
+            float dx = widthMargin*(changeRate);
             float scaleX = (dx+headerViewWidth)/headerViewWidth;
 
             child.setScaleY(scaleY);
             child.setScaleX(scaleX);
             ((RelativeLayout) child).getChildAt(0).setScaleX(scaleY);
- /*           if(animatorSet.isRunning()){
+            Log.i("headerView-","onDependentViewChanged" + " newH:"+newH);
+            Log.i("headerView-","onDependentViewChanged" + " scaleY:"+scaleY);
+/*           if(animatorSet.isRunning()){
                 animatorSet.end();
             }
             animatorSet.playTogether(
@@ -107,9 +105,6 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
             animatorSet.start();
             oldScaleY = scaleY;
             oldScaleX = scaleX;*/
-
-            //修改layoutP方式
-
 /*
             if(valueAnimator!= null&&valueAnimator.isRunning()){
                 valueAnimator.end();
@@ -126,6 +121,18 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
             valueAnimator.start();*/
         }
         return true;
+    }
+
+    private void setStatusBarAndTitleBar(CoordinatorLayout parent,ViewGroup child,float translationY) {
+        if(parent.getContext() instanceof Activity){
+            if(translationY>(float) titleHeight/2&&StatusBarUtil.statusBarStatus==1) {
+                StatusBarUtil.transparencyBar((Activity) parent.getContext());
+            }else if(translationY<=(float) titleHeight/2&&StatusBarUtil.statusBarStatus==2){
+                StatusBarUtil.setStatusBarLightMode((Activity) parent.getContext());
+            }
+        }
+        child.setBackgroundResource(translationY>=titleHeight?R.drawable.conner_9_top_bg_999999:R.drawable.conner_9_bg_999999);
+        parent.findViewById(R.id.title).setAlpha(translationY>0?1-changeRate:1);
     }
 
     private void setNewHeight(View child, float h) {
@@ -178,15 +185,27 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
 //                            }
 //                        });
 //                        valueAnimator.start();
+                    }else{
+                        scrollView.setTranslationY(titleHeight);
                     }
                     mStartY = endY;
                     mStartX = endX;
                 }
                 break;
             case MotionEvent.ACTION_UP:
+
+                break;
             case MotionEvent.ACTION_CANCEL:
                 break;
         }
         return true;
     }
+
+    @Override
+    public void onStopNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int type) {
+        super.onStopNestedScroll(coordinatorLayout, child, target, type);
+        Log.i("HeaderView"," onStopNestedScroll");
+    }
+
+
 }
