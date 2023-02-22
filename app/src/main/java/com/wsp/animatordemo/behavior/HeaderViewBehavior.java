@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.wsp.animatordemo.utils.DensityUtil;
 import com.wsp.animatordemo.R;
 import com.wsp.animatordemo.utils.StatusBarUtil;
+import com.wsp.animatordemo.view.MyHScrollView;
 
 public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
 
@@ -41,10 +42,12 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
     final AnimatorSet animatorSet = new AnimatorSet();
 
     float oldH;
-    ViewGroup outChild;
+    MyHScrollView outChild;
     LinearLayout ll;
     RelativeLayout rlChild;
     ImageView imgV;
+    private boolean hScrollViewAtTop;
+    private float orginX;
 
 
     public HeaderViewBehavior(Context context, AttributeSet attrs) {
@@ -55,7 +58,7 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
     public boolean onLayoutChild(@NonNull CoordinatorLayout parent, @NonNull View child, int layoutDirection) {
         parent.onLayoutChild(child,layoutDirection);
         scrollView = parent.findViewById(R.id.recycler);
-        outChild = (HorizontalScrollView) child;
+        outChild = (MyHScrollView) child;
         ll = (LinearLayout) outChild.getChildAt(0);
         rlChild = (RelativeLayout)ll.getChildAt(0);
         imgV = (ImageView) rlChild.getChildAt(0);
@@ -63,9 +66,13 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
         titleHeight = parent.findViewById(R.id.title).getMeasuredHeight();
         headerViewHeight = child.getMeasuredHeight();
         oldH = headerViewHeight;
-        headerViewWidth = child.getMeasuredWidth();
+        headerViewWidth = rlChild.getMeasuredWidth();
         headerViewScaleHeight = headerViewHeight + 2*titleHeight;
         screenW = DensityUtil.getScreenWidth(child.getContext());
+
+        outChild.addOnScrollToTopListener(atTop -> {
+            hScrollViewAtTop = atTop;
+        });
         Log.i("headerView-","onLayoutChild" + "headerViewHeight:"+headerViewHeight);
         // 设置 top 从而排在 HeaderView的下面
         ViewCompat.offsetTopAndBottom(child, titleHeight);
@@ -89,6 +96,7 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
         int measuredHeight = child.getMeasuredHeight();
         Log.i("headerView-","onDependentViewChanged" + " translationY:"+translationY);
         setStatusBarAndTitleBar(parent,translationY);
+        outChild.setCanScroll(translationY<=0);
         if(translationY<0&&measuredHeight<=headerViewHeight){
             child.setTranslationY(translationY);
         }else if(translationY<=titleHeight){
@@ -104,11 +112,11 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
             float scaleX = (dx+headerViewWidth)/headerViewWidth;
 
             child.setScaleY(scaleY);
-            child.setScaleX(scaleX);
             rlChild.setScaleX(scaleX);
             imgV.setScaleX(scaleY);
             Log.i("headerView-","onDependentViewChanged" + " newH:"+newH);
             Log.i("headerView-","onDependentViewChanged" + " scaleY:"+scaleY);
+            Log.i("headerView-","onDependentViewChanged" + " scaleX:"+scaleX);
 /*           if(animatorSet.isRunning()){
                 animatorSet.end();
             }
@@ -163,27 +171,27 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
 
     @Override
     public boolean onInterceptTouchEvent(@NonNull CoordinatorLayout parent, @NonNull View child, @NonNull MotionEvent ev) {
-        return super.onInterceptTouchEvent(parent, child, ev);
-    }
-
-    @Override
-    public boolean onTouchEvent(@NonNull CoordinatorLayout parent, @NonNull View child, @NonNull MotionEvent ev) {
+        boolean result = false;
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mStartX = ev.getX();
+                orginX = ev.getX();
                 mStartY = ev.getY();
                 orginY = ev.getY();
                 break;
             case MotionEvent.ACTION_MOVE:
                 float endX = ev.getX();
                 float endY = ev.getY();
-                float distanceX = Math.abs(endX - mStartX);
-                float distanceY = Math.abs(endY - mStartY);
-                if(distanceY > distanceX){
+                float distanceX = Math.abs(endX - orginX);
+                float distanceY = Math.abs(endY - orginY);
+                Log.i("onInterceptTouchEvent","left "+outChild.getLeft());
+                Log.i("onInterceptTouchEvent","scrollX "+rlChild.getScrollX());
+                Log.i("onInterceptTouchEvent","getTranslationX "+rlChild.getTranslationX());
+                if((distanceY > distanceX)&&hScrollViewAtTop){
+                    outChild.setVerticalScrolling(true);
                     float dY = endY - mStartY;
                     float translationY = scrollView.getTranslationY();
                     float newTransY = translationY+dY;
-//                    child.setY(ev.getRawY()-orginY);
                     Log.i("onInterceptTouchEvent","newTransT "+newTransY);
                     if(newTransY<=titleHeight) {
                         scrollView.setTranslationY(newTransY);
@@ -207,11 +215,16 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                scrollView.stopNestedScroll(ViewCompat.TYPE_TOUCH);
-                break;
             case MotionEvent.ACTION_CANCEL:
+                outChild.setVerticalScrolling(false);
+                result = false;
                 break;
         }
+        return result;
+    }
+
+    @Override
+    public boolean onTouchEvent(@NonNull CoordinatorLayout parent, @NonNull View child, @NonNull MotionEvent ev) {
         return true;
     }
 

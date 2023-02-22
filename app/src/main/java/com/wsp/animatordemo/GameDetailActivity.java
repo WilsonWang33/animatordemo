@@ -99,7 +99,8 @@ public class GameDetailActivity extends AppCompatActivity {
         screenWidth = DensityUtil.getScreenWidth(this);
         RelativeLayout relativeLayout = new RelativeLayout(this);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams((screenWidth - DensityUtil.dip2px(this, 60)), ViewGroup.LayoutParams.MATCH_PARENT);
-        layoutParams.rightMargin = DensityUtil.dip2px(this,15);
+        layoutParams.rightMargin = DensityUtil.dip2px(this,30);
+        layoutParams.leftMargin = DensityUtil.dip2px(this,30);
         relativeLayout.setLayoutParams(layoutParams);
         relativeLayout.setBackgroundResource(R.drawable.conner_9_bg_999999);
         relativeLayout.addView(createImageView());

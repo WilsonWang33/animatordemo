@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.wsp.animatordemo.utils.DensityUtil;
 import com.wsp.animatordemo.R;
+import com.wsp.animatordemo.view.MyHScrollView;
 
 public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     private int headerViewHeight;
@@ -22,6 +23,8 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     private RecyclerView contentView;
     private OverScroller scroller;
     private boolean isFling;
+    private boolean hScrollViewAtTop = true;
+    MyHScrollView myHScrollView;
 
     private final Runnable scrollRunnable = new Runnable() {
         @Override
@@ -74,10 +77,14 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
         parent.onLayoutChild(child,layoutDirection);
         contentView = (RecyclerView) child;
         titleHeight = parent.findViewById(R.id.title).getMeasuredHeight();
-        headerViewHeight = parent.findViewById(R.id.banner).getMeasuredHeight()+titleHeight;
+        myHScrollView = parent.findViewById(R.id.banner);
+
+        headerViewHeight = myHScrollView.getMeasuredHeight()+titleHeight;
         headerViewScaleHeight = headerViewHeight + 2*titleHeight;
+
         // 设置 top 从而排在 HeaderView的下面
         ViewCompat.offsetTopAndBottom(child, headerViewHeight);
+        myHScrollView.addOnScrollToTopListener(atTop -> {hScrollViewAtTop = atTop;});
         return true;
 
     }
@@ -111,6 +118,9 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
         }
     }
 
+    float bottomPoint;
+
+
     @Override
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type, @NonNull int[] consumed) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type, consumed);
@@ -120,11 +130,20 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
         Log.i("Content-", " getTranslationY "+child.getTranslationY());
         if (dyUnconsumed < 0) { // 只处理手指向下滑动的情况
             float newTransY = child.getTranslationY() - dyUnconsumed;
-            if (newTransY<=titleHeight) {
-                child.setTranslationY(newTransY);
-            } else {
-                child.setTranslationY(titleHeight);
+            if(hScrollViewAtTop){
+                if (newTransY<=titleHeight) {
+                    child.setTranslationY(newTransY);
+                } else {
+                    child.setTranslationY(titleHeight);
+                }
+            }else{
+                if (newTransY<=0) {
+                    child.setTranslationY(newTransY);
+                } else {
+                    child.setTranslationY(0);
+                }
             }
+
         }
     }
 
