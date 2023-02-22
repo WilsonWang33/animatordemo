@@ -24,7 +24,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     private Runnable scrollRunnable = new Runnable() {
         @Override
         public void run() {
-            if(scroller.computeScrollOffset()){
+            if(scroller!=null&&scroller.computeScrollOffset()){
                 contentView.setTranslationY(scroller.getCurrY());
                 ViewCompat.postOnAnimation(contentView,this);
             }
@@ -35,7 +35,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
         if (scroller == null) {
             scroller =new OverScroller(contentView.getContext());
         }
-        if (scroller.isFinished()) {
+        if (scroller!=null&&scroller.isFinished()) {
             contentView.removeCallbacks(scrollRunnable);
             scroller.startScroll(0, current, 0, target - current, duration);
             ViewCompat.postOnAnimation(contentView, scrollRunnable);
@@ -43,7 +43,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     }
 
     private void stopAutoScroll() {
-        if (!scroller.isFinished()) {
+        if (scroller!=null&&scroller.isFinished()) {
             scroller.abortAnimation();
             contentView.removeCallbacks(scrollRunnable);
         }
@@ -75,6 +75,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     @Override
     public void onNestedPreScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int dx, int dy, @NonNull int[] consumed, int type) {
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
+        stopAutoScroll();
         //手指向下滑
         float newTransY = child.getTranslationY()-dy;
         Log.i("Content-","onNestedPreScroll:"+newTransY+"  dy:"+dy);
@@ -97,6 +98,7 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
     @Override
     public void onNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int type, @NonNull int[] consumed) {
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type, consumed);
+        stopAutoScroll();
         if (dyUnconsumed < 0) { // 只处理手指向上滑动的情况
             float newTransY = child.getTranslationY() - dyUnconsumed;
             if (newTransY<=titleHeight) {
@@ -107,5 +109,35 @@ public class ContentViewBehavior extends CoordinatorLayout.Behavior {
             }
         }
 
+    }
+
+    @Override
+    public void onStopNestedScroll(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, int type) {
+        super.onStopNestedScroll(coordinatorLayout, child, target, type);
+        Log.i("ContentViewBehavior"," onStopNestedScroll");
+        if (child.getTranslationY() <= 0 || child.getTranslationY() >= titleHeight) {
+            // RV 已经归位（完全折叠或完全展开）
+            return;
+        }
+        if (child.getTranslationY() <= titleHeight * 0.5f) {
+            stopAutoScroll();
+            startAutoScroll((int) child.getTranslationY(), 0, 800);
+        } else {
+            stopAutoScroll();
+            startAutoScroll((int) child.getTranslationY(), titleHeight, 500);
+        }
+
+    }
+
+    @Override
+    public boolean onNestedPreFling(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, float velocityX, float velocityY) {
+        stopAutoScroll();
+        return super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY);
+    }
+
+    @Override
+    public boolean onNestedFling(@NonNull CoordinatorLayout coordinatorLayout, @NonNull View child, @NonNull View target, float velocityX, float velocityY, boolean consumed) {
+        stopAutoScroll();
+        return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed);
     }
 }

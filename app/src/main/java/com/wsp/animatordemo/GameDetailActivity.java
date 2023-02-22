@@ -91,7 +91,7 @@ public class GameDetailActivity extends AppCompatActivity {
     private void initBanner() {
         imgDatas.add(R.mipmap.living);
         imgDatas.add(R.mipmap.living);
-        layout.banner.setAdapter(new NewBannerAdapter(imgDatas));
+//        layout.banner.setAdapter(new NewBannerAdapter(imgDatas));
 //        View v = getLayoutInflater().inflate(R.layout.item_banner,null,false);
 //        layout.banner.addView(v);
     }

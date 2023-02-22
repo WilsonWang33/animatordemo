@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -80,35 +81,36 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
         int measuredHeight = child.getMeasuredHeight();
 //        Log.i("headerView-","onDependentViewChanged" + " translationY:"+translationY);
 //        Log.i("headerView-","onDependentViewChanged" + " title:"+titleHeight);
-        Log.i("headerView-","onDependentViewChanged" + " headerViewHeight:"+headerViewHeight);
+        RelativeLayout relativeLayout = (RelativeLayout) child;
         if(translationY<0&&measuredHeight<=headerViewHeight){
             child.setTranslationY(translationY);
         }else if(translationY<=titleHeight){
             //scale方式，图片变形
             float newH = headerViewHeight+translationY*2;
-
-            /*Log.i("headerView-","onDependentViewChanged" + " newH:"+newH);
             float scaleY = newH/headerViewHeight;
-            Log.i("headerView-","onDependentViewChanged" + " scaleY:"+scaleY);
-
             //换算x方向放大倍数
-            float maxScaleY = (headerViewHeight+2*titleHeight)/headerViewHeight;
+            float maxScaleY = (float) headerViewScaleHeight/(float) headerViewHeight;
             float widthMargin = DensityUtil.getScreenWidth(child.getContext())-headerViewWidth;
-            float dx = widthMargin*(scaleY-1);
+            float dx = widthMargin*(scaleY-(maxScaleY-1));
             float scaleX = (dx+headerViewWidth)/headerViewWidth;
-            if(animatorSet.isRunning()){
+
+            child.setScaleY(scaleY);
+            child.setScaleX(scaleX);
+            ((RelativeLayout) child).getChildAt(0).setScaleX(scaleY);
+ /*           if(animatorSet.isRunning()){
                 animatorSet.end();
-                animatorSet.removeAllListeners();
             }
             animatorSet.playTogether(
             ObjectAnimator.ofFloat(child,"scaleY", oldScaleY,scaleY).setDuration(100),
-            ObjectAnimator.ofFloat(child,"scaleX", oldScaleX,scaleX).setDuration(100));
+            ObjectAnimator.ofFloat(child,"scaleX", oldScaleX,scaleX).setDuration(100),
+            ObjectAnimator.ofFloat(relativeLayout.getChildAt(0),"scaleX", oldScaleY,scaleY).setDuration(100));
             animatorSet.start();
             oldScaleY = scaleY;
-            oldScaleX = scaleX;
-*/
+            oldScaleX = scaleX;*/
+
             //修改layoutP方式
 
+/*
             if(valueAnimator!= null&&valueAnimator.isRunning()){
                 valueAnimator.end();
             }
@@ -121,7 +123,7 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
                     oldH = h;
                 }
             });
-            valueAnimator.start();
+            valueAnimator.start();*/
         }
         return true;
     }
@@ -140,6 +142,11 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
 
     @Override
     public boolean onInterceptTouchEvent(@NonNull CoordinatorLayout parent, @NonNull View child, @NonNull MotionEvent ev) {
+        return super.onInterceptTouchEvent(parent, child, ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(@NonNull CoordinatorLayout parent, @NonNull View child, @NonNull MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mStartX = ev.getX();
@@ -180,12 +187,6 @@ public class HeaderViewBehavior extends CoordinatorLayout.Behavior {
             case MotionEvent.ACTION_CANCEL:
                 break;
         }
-
-        return super.onInterceptTouchEvent(parent, child, ev);
-    }
-
-    @Override
-    public boolean onTouchEvent(@NonNull CoordinatorLayout parent, @NonNull View child, @NonNull MotionEvent ev) {
         return true;
     }
 }
